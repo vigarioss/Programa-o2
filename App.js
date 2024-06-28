@@ -18,3 +18,25 @@ function handleDBError(res, err) {
     console.error(err);
     res.status(500).json({ error: 'Erro no servidor' });
 }
+
+app.get('/EntidadeA', async (req, res) => {
+    try {
+        const connection = await pool.getConnection();
+        const [rows] = await connection.query('select * from EntidadeA');
+        connection.release();
+        res.json(rows);
+    } catch (err) {
+        handleDBError(res, err);
+    }
+});
+
+app.get('/EntidadeB', async (req, res) => {
+    try {
+        const connection = await pool.getConnection();
+        const [rows] = await connection.query('select * from EntidadeB');
+        connection.release();
+        res.json(rows);
+    } catch (err) {
+        handleDBError(res, err);
+    }
+});
