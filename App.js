@@ -76,3 +76,36 @@ app.get('/EntidadeB/:id', async (req, res) => {
         handleDBError(res, err);
     }
 });
+
+app.get('/EntidadeA/buscar', async (req, res) => {
+    const { atributo } = req.query;
+    try {
+        const connection = await pool.getConnection();
+        const [rows] = await connection.query('select * from EntidadeA WHERE atributo = ?', [atributo]);
+       const result = await Promise.all(rows.map(async (row) => {
+            const [rowsB] = await connection.query('select * from EntidadeB WHERE EntidadeA_id = ?', [row.id]);
+            return { ...row, EntidadeB: rowsB };
+        }));
+        connection.release();
+        res.json(result);
+    } catch (err) {
+        handleDBError(res, err);
+    }
+});
+
+app.get('/EntidadeB/buscar', async (req, res) => {
+    const { atributo } = req.query;
+    try {
+        const connection = await pool.getConnection();
+        const [rows] = await connection.query('select * from EntidadeB WHERE atributo = ?', [atributo]);
+        const result = await Promise.all(rows.map(async (row) => {
+            const [rowsA] = await connection.query('select * from EntidadeA WHERE id = ?', [row.EntidadeA_id]);
+            return { ...row, EntidadeA: rowsA[0] };
+        }));
+        connection.release();
+        res.json(result);
+    } catch (err) {
+        handleDBError(res, err);
+    }
+});
+
