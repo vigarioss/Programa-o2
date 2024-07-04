@@ -109,3 +109,31 @@ app.get('/EntidadeB/buscar', async (req, res) => {
     }
 });
 
+
+    app.post('/EntidadeA', async (req, res) => {
+        const { nome, EntidadeB } = req.body;
+        let connection;
+        try {
+            connection = await pool.getConnection();
+            await connection.beginTransaction();
+            const [resultA] = await connection.query('INSERT INTO EntidadeA (nome) VALUES (?)', [nome]);
+            const entidadeAId = resultA.insertId;
+    
+           
+            await Promise.all(EntidadeB.map(async (item) => {
+                await connection.query('INSERT INTO EntidadeB (descricao, EntidadeA_id) VALUES (?, ?)', [item.descricao, entidadeAId]);
+            }));
+    
+            await connection.commit();
+            connection.release();
+            res.status(201).json({ message: 'Registro criado com sucesso' });
+        } catch (err) {
+            if (connection) {
+                await connection.rollback();
+                connection.release();
+            }
+            handleDBError(res, err);
+        }
+    });
+    
+
