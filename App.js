@@ -135,5 +135,31 @@ app.get('/EntidadeB/buscar', async (req, res) => {
             handleDBError(res, err);
         }
     });
-    
+    app.delete('/EntidadeA/:id', async (req, res) => {
+    const id = req.params.id;
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        await connection.beginTransaction();
+       
+        await connection.query('DELETE FROM EntidadeB WHERE EntidadeA_id = ?', [id]);
+       
+        await connection.query('DELETE FROM EntidadeA WHERE id = ?', [id]);
 
+        await connection.commit();
+        connection.release();
+        res.json({ message: 'Registro excluído com sucesso' });
+    } catch (err) {
+        if (connection) {
+            await connection.rollback();
+            connection.release();
+        }
+        handleDBError(res, err);
+    }
+});
+
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Servidor rodando na porta ${PORT}`);
+});
