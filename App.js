@@ -109,30 +109,31 @@ app.get('/EntidadeB/buscar', async (req, res) => {
     }
 });
 
-app.put('/EntidadeA/:id', async (req, res) => {
-    const id = req.params.id;
-    const { nome, EntidadeB } = req.body;
-    let connection;
-    try {
-        connection = await pool.getConnection();
-        await connection.beginTransaction();
 
-        await connection.query('UPDATE EntidadeA SET nome = ? WHERE id = ?', [nome, id]);
-
-        await connection.query('DELETE FROM EntidadeB WHERE entidade_a_id = ?', [id]);
-
-        await Promise.all(EntidadeB.map(async (item) => {
-            await connection.query('INSERT INTO EntidadeB (descricao, EntidadeA_id) VALUES (?, ?)', [item.descricao, id]);
-        }));
-
-        await connection.commit();
-        connection.release();
-        res.json({ message: 'Registro atualizado com sucesso' });
-    } catch (err) {
-        if (connection) {
-            await connection.rollback();
+    app.post('/EntidadeA', async (req, res) => {
+        const { nome, EntidadeB } = req.body;
+        let connection;
+        try {
+            connection = await pool.getConnection();
+            await connection.beginTransaction();
+            const [resultA] = await connection.query('INSERT INTO EntidadeA (nome) VALUES (?)', [nome]);
+            const entidadeAId = resultA.insertId;
+    
+           
+            await Promise.all(EntidadeB.map(async (item) => {
+                await connection.query('INSERT INTO EntidadeB (descricao, EntidadeA_id) VALUES (?, ?)', [item.descricao, entidadeAId]);
+            }));
+    
+            await connection.commit();
             connection.release();
+            res.status(201).json({ message: 'Registro criado com sucesso' });
+        } catch (err) {
+            if (connection) {
+                await connection.rollback();
+                connection.release();
+            }
+            handleDBError(res, err);
         }
-        handleDBError(res, err);
-    }
-});
+    });
+    
+
