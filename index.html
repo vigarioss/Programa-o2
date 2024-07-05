@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inserir Nova Entidade A</title>
+</head>
+<body>
+    <h1>Inserir Nova Entidade A</h1>
+    <form action="/EntidadeA" method="POST">
+        <label for="nome">Nome da Entidade A:</label>
+        <input type="text" id="nome" name="nome" required>
+        
+        <h2>Entidades B relacionadas</h2>
+        <div id="entidadeB-container">
+            <div class="entidadeB">
+                <label for="descricao">Descrição:</label>
+                <input type="text" id="descricao" name="EntidadeB[0][descricao]" required>
+            </div>
+        </div>
+
+        <button type="button" onclick="addEntidadeB()">Adicionar Entidade B</button>
+        <br><br>
+        <button type="submit">Enviar</button>
+    </form>
+
+    <script>
+        let nextEntidadeB = 1;
+
+        function addEntidadeB() {
+            const container = document.getElementById('entidadeB-container');
+            const div = document.createElement('div');
+            div.classList.add('entidadeB');
+            div.innerHTML = `
+                <label for="descricao">Descrição:</label>
+                <input type="text" id="descricao" name="EntidadeB[${nextEntidadeB}][descricao]" required>
+            `;
+            container.appendChild(div);
+            nextEntidadeB++;
+        }
+    </script>
+</body>
+</html>

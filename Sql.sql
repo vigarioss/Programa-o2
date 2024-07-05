@@ -1,4 +1,3 @@
-
 create database if not exists Info22P2;
 
 
