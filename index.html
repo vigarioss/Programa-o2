@@ -7,7 +7,7 @@
 </head>
 <body>
     <h1>Inserir Nova Entidade A</h1>
-    <form action="/EntidadeA" method="POST">
+    <form id="entidadeA-form">
         <label for="nome">Nome da Entidade A:</label>
         <input type="text" id="nome" name="nome" required>
         
@@ -38,6 +38,41 @@
             container.appendChild(div);
             nextEntidadeB++;
         }
+
+        document.getElementById('entidadeA-form').addEventListener('submit', async (event) => {
+            event.preventDefault(); // Impede o envio padrão do formulário
+
+            const formData = new FormData(event.target);
+            const data = {};
+
+            formData.forEach((value, key) => {
+                if (key.startsWith('EntidadeB[')) {
+                    const index = key.match(/\d+/)[0];
+                    if (!data['EntidadeB']) data['EntidadeB'] = [];
+                    data['EntidadeB'][index] = data['EntidadeB'][index] || {};
+                    data['EntidadeB'][index][key.split('[')[1].split(']')[0]] = value;
+                } else {
+                    data[key] = value;
+                }
+            });
+
+            try {
+                const response = await fetch('/EntidadeA', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data),
+                });
+
+                const result = await response.json();
+                console.log(result);
+                alert('Registro criado com sucesso!');
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('Erro ao criar registro.');
+            }
+        });
     </script>
 </body>
 </html>
